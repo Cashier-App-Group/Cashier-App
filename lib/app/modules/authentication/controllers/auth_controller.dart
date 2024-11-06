@@ -17,21 +17,17 @@ class AuthController extends GetxController {
     super.onInit();
   }
 
-  // Fungsi untuk login
   Future<void> loginUser(String email, String password) async {
     try {
-      // Menunggu proses login dengan email dan password
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      // Jika login berhasil, arahkan ke CashierView
+
       if (userCredential.user != null) {
-        Get.offAll(
-            () => CashierView()); // Mengarahkan ke CashierView setelah login
+        Get.offAll(() => CashierView());
       }
     } on FirebaseAuthException catch (e) {
-      // Menampilkan alert jika terjadi kesalahan
       String errorMessage = 'Terjadi kesalahan. Cek email dan password.';
       if (e.code == 'user-not-found') {
         errorMessage =
@@ -44,7 +40,6 @@ class AuthController extends GetxController {
     }
   }
 
-  // Fungsi untuk register (optional jika diperlukan di sini)
   Future<void> registerUser(
       String email, String password, Profile profile) async {
     if (email.isEmpty || password.isEmpty) {

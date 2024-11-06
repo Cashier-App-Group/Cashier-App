@@ -30,10 +30,8 @@ class MyDrawerController extends GetxController {
         }
       } catch (e) {
         print('Error fetching user data: $e');
-        // Implement retry logic if the service is unavailable
-        await Future.delayed(
-            Duration(seconds: 3)); // Wait for 3 seconds before retrying
-        fetchUserData(); // Retry fetching data
+        await Future.delayed(Duration(seconds: 3));
+        fetchUserData();
       }
     }
   }

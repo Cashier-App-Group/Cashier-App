@@ -77,7 +77,7 @@ class LoginView extends StatelessWidget {
               height: 55,
               child: TextField(
                 controller: passwordController,
-                obscureText: true, // Hide the password text
+                obscureText: true,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Color(0xFFF3F2F2),
@@ -123,7 +123,6 @@ class LoginView extends StatelessWidget {
             SizedBox(height: 130),
             ElevatedButton(
               onPressed: () {
-                // Trigger login with the email and password entered
                 authController.loginUser(
                   emailController.text,
                   passwordController.text,
@@ -146,7 +145,6 @@ class LoginView extends StatelessWidget {
             SizedBox(height: 20),
             GestureDetector(
               onTap: () {
-                // Navigate to register view
                 Get.to(() => RegisterView());
               },
               child: RichText(

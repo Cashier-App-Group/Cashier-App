@@ -11,7 +11,6 @@ import 'package:get/get.dart';
 class RegisterView extends GetView<RegisterController> {
   final AuthController authController = Get.put(AuthController());
 
-  // Membuat TextEditingController untuk setiap field
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
@@ -64,12 +63,11 @@ class RegisterView extends GetView<RegisterController> {
                 ),
               ),
               SizedBox(height: 80),
-              // Field untuk nama
               Container(
                 width: 350,
                 height: 55,
                 child: TextField(
-                  controller: nameController, // Menghubungkan controller
+                  controller: nameController,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Color(0xFFF3F2F2),
@@ -97,12 +95,11 @@ class RegisterView extends GetView<RegisterController> {
                 ),
               ),
               SizedBox(height: 30),
-              // Field untuk email
               Container(
                 width: 350,
                 height: 55,
                 child: TextField(
-                  controller: emailController, // Menghubungkan controller
+                  controller: emailController,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Color(0xFFF3F2F2),
@@ -130,12 +127,11 @@ class RegisterView extends GetView<RegisterController> {
                 ),
               ),
               SizedBox(height: 30),
-              // Field untuk nomor telepon
               Container(
                 width: 350,
                 height: 55,
                 child: TextField(
-                  controller: phoneController, // Menghubungkan controller
+                  controller: phoneController,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Color(0xFFF3F2F2),
@@ -163,12 +159,11 @@ class RegisterView extends GetView<RegisterController> {
                 ),
               ),
               SizedBox(height: 30),
-              // Field untuk password
               Container(
                 width: 350,
                 height: 55,
                 child: TextField(
-                  controller: passwordController, // Menghubungkan controller
+                  controller: passwordController,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Color(0xFFF3F2F2),
@@ -196,7 +191,6 @@ class RegisterView extends GetView<RegisterController> {
                 ),
               ),
               SizedBox(height: 100),
-              // Tombol register
               ElevatedButton(
                 onPressed: _submitProfile,
                 style: ElevatedButton.styleFrom(
@@ -216,7 +210,6 @@ class RegisterView extends GetView<RegisterController> {
               SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
-                  // Navigasi ke halaman Login jika sudah memiliki akun
                   Get.to(() => LoginView());
                 },
                 child: RichText(

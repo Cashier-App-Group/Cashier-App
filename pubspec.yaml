@@ -6,6 +6,7 @@ environment:
   sdk: '>=3.2.6 <4.0.0'
 
 dependencies:
+  printing: ^5.9.0
   path_provider: ^2.0.0
   firebase_storage: ^11.2.2
   image_picker: ^0.8.4+4

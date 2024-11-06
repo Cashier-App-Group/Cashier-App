@@ -1,13 +1,21 @@
+import 'package:cashier/app/modules/authentication/controllers/auth_controller.dart';
 import 'package:cashier/app/modules/cashier/controllers/cashier_controller.dart';
 import 'package:cashier/app/modules/checkout/views/checkout_view.dart';
 import 'package:cashier/app/modules/drawer/controllers/drawer_controller.dart';
+import 'package:cashier/app/modules/history/views/history_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class CashierView extends StatelessWidget {
   final CashierController controller = Get.put(CashierController());
   final MyDrawerController drawerController = Get.put(MyDrawerController());
+  final GlobalKey<ScaffoldState> _cashierScaffoldKey =
+      GlobalKey<ScaffoldState>();
+
+  // Menyimpan input pencarian
+  var searchQuery = ''.obs;
 
   // Fungsi untuk mendapatkan gambar berdasarkan nama makanan
   String getFoodImage(String foodName) {
@@ -46,7 +54,7 @@ class CashierView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: drawerController.scaffoldkey,
+      key: _cashierScaffoldKey,
       appBar: AppBar(
         title: Text('Menu Makanan'),
         backgroundColor: Color(0xFFCD2B21),
@@ -90,13 +98,22 @@ class CashierView extends StatelessWidget {
               title: const Text('Laporan Stok'),
             ),
             ListTile(
-              onTap: drawerController.closeDrawer,
+              onTap: () {
+                drawerController.closeDrawer();
+                Get.to(() => HistoryView());
+              },
               title: const Text('Riwayat Pembelian'),
             ),
             ListTile(
               onTap: drawerController.closeDrawer,
               title: const Text('Pemasukan dan Pengeluaran'),
-            )
+            ),
+            ListTile(
+              onTap: () async {
+                Get.offAllNamed('/login');
+              },
+              title: const Text('Logout'),
+            ),
           ],
         ),
       ),
@@ -108,11 +125,20 @@ class CashierView extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             }
+
             if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
             }
 
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return Center(child: Text('No menu items available.'));
+            }
+
             var foodItems = snapshot.data?.docs ?? [];
+            var filteredFoodItems = foodItems.where((foodItem) {
+              String foodName = foodItem['name'].toString().toLowerCase();
+              return foodName.contains(searchQuery.value.toLowerCase());
+            }).toList();
 
             return Column(
               children: [
@@ -125,81 +151,100 @@ class CashierView extends StatelessWidget {
                     ),
                   ),
                   onChanged: (value) {
-                    // Implement search logic if needed
+                    searchQuery.value = value;
                   },
                 ),
                 SizedBox(height: 20),
                 Expanded(
-                  child: GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 10.0,
-                      mainAxisSpacing: 10.0,
-                      childAspectRatio: 0.75,
-                    ),
-                    itemCount: foodItems.length,
-                    itemBuilder: (context, index) {
-                      String foodName = foodItems[index]['name'];
-                      String foodImage = getFoodImage(foodName);
-                      double foodPriceDouble =
-                          foodItems[index]['price']?.toDouble() ?? 0.0;
-                      String foodPrice = foodPriceDouble > 0
-                          ? 'Rp ${foodPriceDouble.toStringAsFixed(2)}'
-                          : 'Harga Tidak Tersedia';
+                  child: Obx(() {
+                    // Filter berdasarkan search query yang langsung dipantau
+                    var filteredFoodItems = foodItems.where((foodItem) {
+                      String foodName =
+                          foodItem['name'].toString().toLowerCase();
+                      return foodName.contains(searchQuery.value.toLowerCase());
+                    }).toList();
 
-                      return Card(
-                        elevation: 4.0,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12.0),
-                              child: Image.asset(
-                                foodImage,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                height: 120.0,
-                              ),
+                    return filteredFoodItems.isEmpty
+                        ? Center(
+                            child: Text('No food items match your search.'))
+                        : GridView.builder(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 10.0,
+                              mainAxisSpacing: 10.0,
+                              childAspectRatio: 0.75,
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                foodName,
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            Text(
-                              foodPrice,
-                              style:
-                                  TextStyle(fontSize: 14, color: Colors.green),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.remove),
-                                  onPressed: () {
-                                    controller.decrement(foodName);
-                                  },
+                            itemCount: filteredFoodItems.length,
+                            itemBuilder: (context, index) {
+                              String foodName =
+                                  filteredFoodItems[index]['name'];
+                              String foodImage = getFoodImage(foodName);
+                              double foodPriceDouble = filteredFoodItems[index]
+                                          ['price']
+                                      ?.toDouble() ??
+                                  0.0;
+                              String foodPrice = foodPriceDouble > 0
+                                  ? 'Rp ${foodPriceDouble.toStringAsFixed(2)}'
+                                  : 'Harga Tidak Tersedia';
+
+                              return Card(
+                                elevation: 4.0,
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12.0),
+                                      child: Image.asset(
+                                        foodImage,
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        height: 120.0,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        foodName,
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    Text(
+                                      foodPrice,
+                                      style: TextStyle(
+                                          fontSize: 14, color: Colors.green),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(Icons.remove),
+                                          onPressed: () {
+                                            controller.decrement(foodName);
+                                          },
+                                        ),
+                                        Obx(() => Text(
+                                              '${controller.itemCounts[foodName] ?? 0}',
+                                              style: TextStyle(fontSize: 18),
+                                            )),
+                                        IconButton(
+                                          icon: Icon(Icons.add),
+                                          onPressed: () {
+                                            controller.increment(foodName);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                Obx(() => Text(
-                                      '${controller.itemCounts[foodName] ?? 0}',
-                                      style: TextStyle(fontSize: 18),
-                                    )),
-                                IconButton(
-                                  icon: Icon(Icons.add),
-                                  onPressed: () {
-                                    controller.increment(foodName);
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                              );
+                            },
+                          );
+                  }),
                 ),
                 Obx(() {
                   if (controller.showCheckoutButton.value) {
@@ -234,12 +279,12 @@ class CashierView extends StatelessWidget {
                               Get.to(() => CheckoutView());
                             },
                             child: Text('Checkout'),
-                          )
+                          ),
                         ],
                       ),
                     );
                   } else {
-                    return SizedBox();
+                    return Container();
                   }
                 }),
               ],

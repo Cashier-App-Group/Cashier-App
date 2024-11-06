@@ -1,4 +1,5 @@
 import 'package:cashier/app/modules/cashier/controllers/cashier_controller.dart';
+import 'package:cashier/app/modules/checkout/views/receipt_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,9 +12,21 @@ class CheckoutView extends StatefulWidget {
 class _CheckoutViewState extends State<CheckoutView> {
   final CashierController controller = Get.find<CashierController>();
   final TextEditingController uangDiberikanController = TextEditingController();
-  double kembalian = 0.0; // Default value of kembalian
+  double kembalian = 0.0;
+  bool isProcessEnabled = false;
+  String cashierName = '';
 
-  // Function to fetch price from Firestore based on food name
+  @override
+  void initState() {
+    super.initState();
+    fetchCashierName();
+  }
+
+  Future<void> fetchCashierName() async {
+    cashierName = await ReceiptView.fetchCashierName();
+    setState(() {});
+  }
+
   Future<double> getPrice(String foodName) async {
     try {
       var docSnapshot = await FirebaseFirestore.instance
@@ -34,7 +47,6 @@ class _CheckoutViewState extends State<CheckoutView> {
     }
   }
 
-  // Function to calculate total price
   Future<double> calculateTotal() async {
     double total = 0.0;
     for (var item in controller.checkoutItems) {
@@ -44,6 +56,21 @@ class _CheckoutViewState extends State<CheckoutView> {
       total += price * quantity;
     }
     return total;
+  }
+
+  void _updateKembalian() {
+    double uangDiberikan = double.tryParse(uangDiberikanController.text) ?? 0.0;
+    calculateTotal().then((totalHarga) {
+      setState(() {
+        if (uangDiberikan >= totalHarga) {
+          kembalian = uangDiberikan - totalHarga;
+          isProcessEnabled = true;
+        } else {
+          kembalian = 0.0;
+          isProcessEnabled = false;
+        }
+      });
+    });
   }
 
   @override
@@ -80,7 +107,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
-                            return CircularProgressIndicator(); // Loading data
+                            return CircularProgressIndicator();
                           } else if (snapshot.hasError) {
                             return Text('Error fetching price');
                           } else if (snapshot.hasData) {
@@ -144,7 +171,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                 future: calculateTotal(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CircularProgressIndicator(); // Loading total
+                    return CircularProgressIndicator();
                   } else if (snapshot.hasError) {
                     return Text('Error calculating total');
                   } else if (snapshot.hasData) {
@@ -161,7 +188,6 @@ class _CheckoutViewState extends State<CheckoutView> {
                           ),
                         ),
                         SizedBox(height: 16),
-                        // Row containing 'Bayar' label and TextField for uangDiberikan
                         Row(
                           children: [
                             Text(
@@ -176,85 +202,61 @@ class _CheckoutViewState extends State<CheckoutView> {
                               width: 200,
                               height: 50,
                               child: TextField(
-                                  controller: uangDiberikanController,
-                                  keyboardType: TextInputType.number,
-                                  decoration: InputDecoration(
-                                    prefixText: 'Rp ',
-                                    border: UnderlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Colors.black,
-                                        width: 1.0,
-                                      ),
+                                controller: uangDiberikanController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  prefixText: 'Rp ',
+                                  border: UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Colors.black,
+                                      width: 1.0,
                                     ),
                                   ),
-                                  // Hapus setState di sini
-                                  onChanged: (value) {
-                                    // Di sini hanya memperbarui text input tanpa memanggil setState
-                                  },
-                                  onEditingComplete: () {
-                                    setState(() {
-                                      double uangDiberikan = double.tryParse(
-                                              uangDiberikanController.text) ??
-                                          0.0;
-
-                                      // Hitung total harga pesanan
-                                      calculateTotal().then((totalHarga) {
-                                        if (uangDiberikan >= totalHarga) {
-                                          kembalian =
-                                              uangDiberikan - totalHarga;
-                                        } else {
-                                          kembalian =
-                                              0.0; // Reset kembalian jika uang tidak cukup
-                                        }
-                                        setState(
-                                            () {}); // Memastikan UI diperbarui
-                                      });
-                                    });
-                                  }),
+                                ),
+                                onEditingComplete: _updateKembalian,
+                              ),
                             ),
                             SizedBox(width: 8),
-                            // Tanda centang akan selalu muncul
                             Icon(
                               Icons.check,
-                              color: Colors.green, // Centang selalu muncul
+                              color: Colors.green,
                             ),
                           ],
                         ),
                         SizedBox(height: 16),
-                        Builder(
-                          builder: (context) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Kembalian: Rp ${kembalian.toStringAsFixed(2)}',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    // Trigger login with the email and password entered
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    primary: Color(0xFFCD2B21),
-                                    onPrimary: Colors.white,
-                                    padding: EdgeInsets.symmetric(
-                                        vertical: 1.0, horizontal: 165.0),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Proses',
-                                    style: TextStyle(fontSize: 14),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
+                        Text(
+                          'Kembalian: Rp ${kembalian.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: isProcessEnabled
+                              ? () => Get.to(() => ReceiptView(
+                                    cashierName: cashierName,
+                                    checkoutItems: controller.checkoutItems,
+                                    total: snapshot.data ?? 0.0,
+                                    change: kembalian,
+                                    payment: double.tryParse(
+                                            uangDiberikanController.text) ??
+                                        0.0,
+                                  ))
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            primary: Color(0xFFCD2B21),
+                            onPrimary: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                                vertical: 1.0, horizontal: 165.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                          ),
+                          child: Text(
+                            'Proses',
+                            style: TextStyle(fontSize: 14),
+                          ),
                         ),
                       ],
                     );

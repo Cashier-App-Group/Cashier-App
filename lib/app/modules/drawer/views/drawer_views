@@ -1,0 +1,59 @@
+import 'package:cashier/app/modules/cashier/views/cashier_view.dart';
+import 'package:cashier/app/modules/history/views/history_view.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+class CustomDrawer extends StatelessWidget {
+  final MyDrawerController drawerController = Get.find<MyDrawerController>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        children: [
+          DrawerHeader(
+            padding: EdgeInsets.zero,
+            child: Obx(() => Container(
+                  color: Color(0xFFCD2B21),
+                  padding: EdgeInsets.only(left: 16.0, top: 30.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          drawerController.userName.value.toUpperCase(),
+                          style: TextStyle(color: Colors.white, fontSize: 30),
+                        ),
+                        Text(
+                          drawerController.userEmail.value,
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                )),
+          ),
+          _buildDrawerItem('Cashier', () => Get.to(() => CashierView())),
+          _buildDrawerItem('Laporan Stok', drawerController.closeDrawer),
+          _buildDrawerItem('Riwayat Pembelian', () => Get.to(() => HistoryView())),
+          _buildDrawerItem('Pemasukan dan Pengeluaran', drawerController.closeDrawer),
+          _buildDrawerItem('Logout', () async {
+            Get.offAllNamed('/login');
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(String title, Function onTap) {
+    return ListTile(
+      onTap: () {
+        drawerController.closeDrawer();
+        onTap();
+      },
+      title: Text(title),
+    );
+  }
+}
