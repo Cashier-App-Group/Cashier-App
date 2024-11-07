@@ -1,14 +1,50 @@
 import 'package:cashier/app/modules/cashier/views/cashier_view.dart';
 import 'package:cashier/app/modules/drawer/controllers/drawer_controller.dart';
+import 'package:cashier/app/modules/income/views/income_view.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:intl/intl.dart';
 
-class HistoryView extends StatelessWidget {
+class HistoryView extends StatefulWidget {
+  @override
+  _HistoryViewState createState() => _HistoryViewState();
+}
+
+class _HistoryViewState extends State<HistoryView> {
   final MyDrawerController drawerController = Get.put(MyDrawerController());
   final GlobalKey<ScaffoldState> _historyScaffoldKey =
       GlobalKey<ScaffoldState>();
+
+  DateTime selectedDate = DateTime.now();
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: Colors.white,
+            buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+            primaryColorDark: Colors.white,
+            scaffoldBackgroundColor: Colors.white,
+            dialogBackgroundColor: Colors.white,
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,6 +52,12 @@ class HistoryView extends StatelessWidget {
       appBar: AppBar(
         title: Text('Riwayat Pembelian'),
         backgroundColor: Color(0xFFCD2B21),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.calendar_today),
+            onPressed: () => _selectDate(context),
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -63,8 +105,11 @@ class HistoryView extends StatelessWidget {
               title: const Text('Riwayat Pembelian'),
             ),
             ListTile(
-              onTap: drawerController.closeDrawer,
-              title: const Text('Pemasukan dan Pengeluaran'),
+              onTap: () {
+                drawerController.closeDrawer();
+                Get.to(() => PemasukanPerHariView());
+              },
+              title: const Text('Pemasukan Harian'),
             ),
             ListTile(
               onTap: () async {
@@ -80,6 +125,20 @@ class HistoryView extends StatelessWidget {
         child: StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('history')
+              .where('timestamp',
+                  isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime(
+                      selectedDate.year,
+                      selectedDate.month,
+                      selectedDate.day,
+                      0,
+                      0)))
+              .where('timestamp',
+                  isLessThanOrEqualTo: Timestamp.fromDate(DateTime(
+                      selectedDate.year,
+                      selectedDate.month,
+                      selectedDate.day,
+                      23,
+                      59)))
               .orderBy('timestamp', descending: true)
               .snapshots(),
           builder: (context, snapshot) {
@@ -92,82 +151,103 @@ class HistoryView extends StatelessWidget {
 
             var historyItems = snapshot.data?.docs ?? [];
 
-            return GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16.0,
-                mainAxisSpacing: 16.0,
-                childAspectRatio: 0.8,
-              ),
-              itemCount: historyItems.length,
-              itemBuilder: (context, index) {
-                var history = historyItems[index];
-                String orderNumber = history['orderNumber'] ?? 'N/A';
-                Timestamp timestamp = history['timestamp'] ?? Timestamp.now();
-                double total = history['total']?.toDouble() ?? 0.0;
-                DateTime dateTime = timestamp.toDate();
-                String formattedDate =
-                    '${dateTime.day}-${dateTime.month}-${dateTime.year}';
-                String formattedTime = '${dateTime.hour}:${dateTime.minute}';
+            if (historyItems.isEmpty) {
+              return Center(
+                child: Text('Tidak ada penjualan di tanggal ini',
+                    style: TextStyle(fontSize: 18)),
+              );
+            }
 
-                return Card(
-                  elevation: 4.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '$orderNumber',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16.0,
+                      mainAxisSpacing: 16.0,
+                      childAspectRatio: 0.9,
+                    ),
+                    itemCount: historyItems.length,
+                    itemBuilder: (context, index) {
+                      var history = historyItems[index];
+                      String orderNumber = history['orderNumber'] ?? 'N/A';
+                      Timestamp timestamp =
+                          history['timestamp'] ?? Timestamp.now();
+                      double total = history['total']?.toDouble() ?? 0.0;
+                      DateTime dateTime = timestamp.toDate();
+                      String formattedDate =
+                          DateFormat('dd-MM-yyyy').format(dateTime);
+                      String formattedTime =
+                          DateFormat('HH:mm').format(dateTime);
+
+                      return Card(
+                        elevation: 4.0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
                         ),
-                        SizedBox(height: 8.0),
-                        Text(
-                          'Tanggal: $formattedDate',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        Text(
-                          'Jam: $formattedTime',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        SizedBox(height: 8.0),
-                        Text(
-                          'Total: Rp ${total.toStringAsFixed(2)}',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 20.0),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => HistoryDetailView(
-                                  orderNumber: orderNumber,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  '$orderNumber',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
-                            );
-                          },
-                          child: Text('Detail'),
-                          style: ElevatedButton.styleFrom(
-                            primary: Color(0xFFCD2B21),
-                            onPrimary: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                                vertical: 12.0, horizontal: 16.0),
+                              SizedBox(height: 8.0),
+                              Text(
+                                'Tanggal: $formattedDate',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              Text(
+                                'Waktu: $formattedTime',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              SizedBox(height: 8.0),
+                              Text(
+                                'Total: Rp ${total.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 20.0),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => HistoryDetailView(
+                                        orderNumber: orderNumber,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Text('Detail',
+                                    style: TextStyle(fontSize: 14)),
+                                style: ElevatedButton.styleFrom(
+                                  primary: Color(0xFFCD2B21),
+                                  onPrimary: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 8.0, horizontal: 16.0),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
+                ],
+              ),
             );
           },
         ),

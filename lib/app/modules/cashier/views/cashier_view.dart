@@ -3,10 +3,10 @@ import 'package:cashier/app/modules/cashier/controllers/cashier_controller.dart'
 import 'package:cashier/app/modules/checkout/views/checkout_view.dart';
 import 'package:cashier/app/modules/drawer/controllers/drawer_controller.dart';
 import 'package:cashier/app/modules/history/views/history_view.dart';
+import 'package:cashier/app/modules/income/views/income_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 class CashierView extends StatelessWidget {
   final CashierController controller = Get.put(CashierController());
@@ -14,21 +14,19 @@ class CashierView extends StatelessWidget {
   final GlobalKey<ScaffoldState> _cashierScaffoldKey =
       GlobalKey<ScaffoldState>();
 
-  // Menyimpan input pencarian
   var searchQuery = ''.obs;
 
-  // Fungsi untuk mendapatkan gambar berdasarkan nama makanan
   String getFoodImage(String foodName) {
     switch (foodName) {
       case 'Fried Chicken':
         return 'assets/friedchicken.jpg';
-      case 'Fried Chicken + Nasi':
+      case 'F.Chicken + Nasi':
         return 'assets/friedchicken dan nasi.jpg';
-      case 'F. Chicken+Nasi+Teh':
+      case 'Paket F. Chicken':
         return 'assets/friedchicken dan nasi dan teh.jpg';
-      case 'Ayam Geprek + Nasi':
+      case 'Geprek + Nasi':
         return 'assets/ayam geprek dan nasi.png';
-      case 'Geprek+Nasi+Teh':
+      case 'Paket Geprek':
         return 'assets/ayam geprek dan nasi dan esteh.png';
       case 'Ayam Geprek':
         return 'assets/ayam geprek.png';
@@ -36,7 +34,7 @@ class CashierView extends StatelessWidget {
         return 'assets/sadas.png';
       case 'Ayam Sadas + Nasi':
         return 'assets/sadas dan nasi.jpeg';
-      case 'Sadas+Nasi+Teh':
+      case 'Paket Sadas':
         return 'assets/sadas dan nasi dan esteh.jpeg';
       case 'Nasi Putih':
         return 'assets/nasi.jpg';
@@ -47,7 +45,7 @@ class CashierView extends StatelessWidget {
       case 'Es Milo/Milo Panas':
         return 'assets/esmilo.jpg';
       default:
-        return 'assets/stok_habis.jpg'; // Gambar default jika tidak ditemukan
+        return 'assets/stok_habis.jpg';
     }
   }
 
@@ -105,8 +103,11 @@ class CashierView extends StatelessWidget {
               title: const Text('Riwayat Pembelian'),
             ),
             ListTile(
-              onTap: drawerController.closeDrawer,
-              title: const Text('Pemasukan dan Pengeluaran'),
+              onTap: () {
+                drawerController.closeDrawer();
+                Get.to(() => PemasukanPerHariView());
+              },
+              title: const Text('Pemasukan Harian'),
             ),
             ListTile(
               onTap: () async {
@@ -157,7 +158,6 @@ class CashierView extends StatelessWidget {
                 SizedBox(height: 20),
                 Expanded(
                   child: Obx(() {
-                    // Filter berdasarkan search query yang langsung dipantau
                     var filteredFoodItems = foodItems.where((foodItem) {
                       String foodName =
                           foodItem['name'].toString().toLowerCase();
@@ -191,16 +191,20 @@ class CashierView extends StatelessWidget {
                               return Card(
                                 elevation: 4.0,
                                 child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(12.0),
-                                      child: Image.asset(
-                                        foodImage,
-                                        fit: BoxFit.cover,
-                                        width: double.infinity,
-                                        height: 120.0,
+                                      child: ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          maxHeight:
+                                              120.0, // Fixed height for the image
+                                          minWidth: double.infinity,
+                                        ),
+                                        child: Image.asset(
+                                          foodImage,
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
                                     ),
                                     Padding(
@@ -208,36 +212,41 @@ class CashierView extends StatelessWidget {
                                       child: Text(
                                         foodName,
                                         style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                     Text(
                                       foodPrice,
                                       style: TextStyle(
-                                          fontSize: 14, color: Colors.green),
+                                        fontSize: 14,
+                                        color: Colors.green,
+                                      ),
                                     ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        IconButton(
-                                          icon: Icon(Icons.remove),
-                                          onPressed: () {
-                                            controller.decrement(foodName);
-                                          },
-                                        ),
-                                        Obx(() => Text(
-                                              '${controller.itemCounts[foodName] ?? 0}',
-                                              style: TextStyle(fontSize: 18),
-                                            )),
-                                        IconButton(
-                                          icon: Icon(Icons.add),
-                                          onPressed: () {
-                                            controller.increment(foodName);
-                                          },
-                                        ),
-                                      ],
+                                    Flexible(
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(Icons.remove),
+                                            onPressed: () {
+                                              controller.decrement(foodName);
+                                            },
+                                          ),
+                                          Obx(() => Text(
+                                                '${controller.itemCounts[foodName] ?? 0}',
+                                                style: TextStyle(fontSize: 18),
+                                              )),
+                                          IconButton(
+                                            icon: Icon(Icons.add),
+                                            onPressed: () {
+                                              controller.increment(foodName);
+                                            },
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),

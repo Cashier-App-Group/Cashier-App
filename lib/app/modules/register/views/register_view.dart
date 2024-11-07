@@ -36,202 +36,205 @@ class RegisterView extends GetView<RegisterController> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: Colors.white,
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/logo.png',
-                height: 60,
-              ),
-              SizedBox(height: 10),
-              Text(
-                'Get Started',
-                style: TextStyle(
-                  fontSize: 33,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/logo.png',
+                  height: 60,
                 ),
-              ),
-              SizedBox(height: 0),
-              Text(
-                'by creating a free account.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black,
+                SizedBox(height: 10),
+                Text(
+                  'Get Started',
+                  style: TextStyle(
+                    fontSize: 33,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
-              ),
-              SizedBox(height: 80),
-              Container(
-                width: 350,
-                height: 55,
-                child: TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Color(0xFFF3F2F2),
-                    labelText: 'Full name',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      borderSide: BorderSide.none,
-                    ),
-                    labelStyle: TextStyle(
-                      color: Colors.grey,
-                    ),
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.only(right: 17.0),
-                      child: Image.asset(
-                        'assets/name.png',
-                        width: 35,
-                        height: 35,
+                SizedBox(height: 0),
+                Text(
+                  'by creating a free account.',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 80),
+                Container(
+                  width: 350,
+                  height: 55,
+                  child: TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Color(0xFFF3F2F2),
+                      labelText: 'Full name',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide.none,
                       ),
-                    ),
-                    suffixIconConstraints: BoxConstraints(
-                      minWidth: 0,
-                      minHeight: 0,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 30),
-              Container(
-                width: 350,
-                height: 55,
-                child: TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Color(0xFFF3F2F2),
-                    labelText: 'Email',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      borderSide: BorderSide.none,
-                    ),
-                    labelStyle: TextStyle(
-                      color: Colors.grey,
-                    ),
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.only(right: 17.0),
-                      child: Image.asset(
-                        'assets/mail.png',
-                        width: 30,
-                        height: 30,
+                      labelStyle: TextStyle(
+                        color: Colors.grey,
                       ),
-                    ),
-                    suffixIconConstraints: BoxConstraints(
-                      minWidth: 0,
-                      minHeight: 0,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 30),
-              Container(
-                width: 350,
-                height: 55,
-                child: TextField(
-                  controller: phoneController,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Color(0xFFF3F2F2),
-                    labelText: 'Phone number',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      borderSide: BorderSide.none,
-                    ),
-                    labelStyle: TextStyle(
-                      color: Colors.grey,
-                    ),
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.only(right: 17.0),
-                      child: Image.asset(
-                        'assets/phone.png',
-                        width: 30,
-                        height: 30,
-                      ),
-                    ),
-                    suffixIconConstraints: BoxConstraints(
-                      minWidth: 0,
-                      minHeight: 0,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 30),
-              Container(
-                width: 350,
-                height: 55,
-                child: TextField(
-                  controller: passwordController,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Color(0xFFF3F2F2),
-                    labelText: 'Strong password',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      borderSide: BorderSide.none,
-                    ),
-                    labelStyle: TextStyle(
-                      color: Colors.grey,
-                    ),
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.only(right: 17.0),
-                      child: Image.asset(
-                        'assets/lock.png',
-                        width: 35,
-                        height: 32,
-                      ),
-                    ),
-                    suffixIconConstraints: BoxConstraints(
-                      minWidth: 0,
-                      minHeight: 0,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 100),
-              ElevatedButton(
-                onPressed: _submitProfile,
-                style: ElevatedButton.styleFrom(
-                  primary: Color(0xFFCD2B21),
-                  onPrimary: Colors.white,
-                  padding:
-                      EdgeInsets.symmetric(vertical: 12.0, horizontal: 145.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                ),
-                child: Text(
-                  'Register',
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-              SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Get.to(() => LoginView());
-                },
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black,
-                    ),
-                    children: <TextSpan>[
-                      TextSpan(text: 'Already a Cashier? '),
-                      TextSpan(
-                        text: 'Login',
-                        style: TextStyle(
-                          color: Color(0xFFCD2B21),
-                          fontWeight: FontWeight.bold,
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 17.0),
+                        child: Image.asset(
+                          'assets/name.png',
+                          width: 35,
+                          height: 35,
                         ),
                       ),
-                    ],
+                      suffixIconConstraints: BoxConstraints(
+                        minWidth: 0,
+                        minHeight: 0,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ],
+                SizedBox(height: 30),
+                Container(
+                  width: 350,
+                  height: 55,
+                  child: TextField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Color(0xFFF3F2F2),
+                      labelText: 'Email',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide.none,
+                      ),
+                      labelStyle: TextStyle(
+                        color: Colors.grey,
+                      ),
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 17.0),
+                        child: Image.asset(
+                          'assets/mail.png',
+                          width: 30,
+                          height: 30,
+                        ),
+                      ),
+                      suffixIconConstraints: BoxConstraints(
+                        minWidth: 0,
+                        minHeight: 0,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 30),
+                Container(
+                  width: 350,
+                  height: 55,
+                  child: TextField(
+                    controller: phoneController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Color(0xFFF3F2F2),
+                      labelText: 'Phone number',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide.none,
+                      ),
+                      labelStyle: TextStyle(
+                        color: Colors.grey,
+                      ),
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 17.0),
+                        child: Image.asset(
+                          'assets/phone.png',
+                          width: 30,
+                          height: 30,
+                        ),
+                      ),
+                      suffixIconConstraints: BoxConstraints(
+                        minWidth: 0,
+                        minHeight: 0,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 30),
+                Container(
+                  width: 350,
+                  height: 55,
+                  child: TextField(
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Color(0xFFF3F2F2),
+                      labelText: 'Strong password',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: BorderSide.none,
+                      ),
+                      labelStyle: TextStyle(
+                        color: Colors.grey,
+                      ),
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 17.0),
+                        child: Image.asset(
+                          'assets/lock.png',
+                          width: 35,
+                          height: 32,
+                        ),
+                      ),
+                      suffixIconConstraints: BoxConstraints(
+                        minWidth: 0,
+                        minHeight: 0,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 100),
+                ElevatedButton(
+                  onPressed: _submitProfile,
+                  style: ElevatedButton.styleFrom(
+                    primary: Color(0xFFCD2B21),
+                    onPrimary: Colors.white,
+                    padding:
+                        EdgeInsets.symmetric(vertical: 12.0, horizontal: 145.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                  ),
+                  child: Text(
+                    'Register',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+                SizedBox(height: 20),
+                GestureDetector(
+                  onTap: () {
+                    Get.to(() => LoginView());
+                  },
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black,
+                      ),
+                      children: <TextSpan>[
+                        TextSpan(text: 'Already a Cashier? '),
+                        TextSpan(
+                          text: 'Login',
+                          style: TextStyle(
+                            color: Color(0xFFCD2B21),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -247,17 +247,17 @@ class _CheckoutViewState extends State<CheckoutView> {
                           style: ElevatedButton.styleFrom(
                             primary: Color(0xFFCD2B21),
                             onPrimary: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                                vertical: 1.0, horizontal: 165.0),
+                            padding: EdgeInsets.symmetric(vertical: 12.0),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.0),
                             ),
+                            minimumSize: Size(double.infinity, 50),
                           ),
                           child: Text(
                             'Proses',
                             style: TextStyle(fontSize: 14),
                           ),
-                        ),
+                        )
                       ],
                     );
                   } else {
