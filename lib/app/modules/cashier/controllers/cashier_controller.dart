@@ -1,17 +1,17 @@
 import 'dart:io';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CashierController extends GetxController {
   var itemCounts = <String, int>{}.obs;
   var checkoutItems = <Map<String, dynamic>>[].obs;
   var showCheckoutButton = false.obs;
-
   final ImagePicker _picker = ImagePicker();
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   File? _selectedImage;
-
   RxList<Map<String, dynamic>> foodItems = <Map<String, dynamic>>[].obs;
 
   Future<void> saveMenuToLocal(List<Map<String, dynamic>> menus) async {
@@ -38,11 +38,9 @@ class CashierController extends GetxController {
 
   Future<void> pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-
     if (pickedFile != null) {
       _selectedImage = File(pickedFile.path);
       String imagePath = _selectedImage!.path;
-
       saveImagePathLocally(imagePath);
     } else {
       print('Tidak ada gambar yang dipilih.');
@@ -54,9 +52,32 @@ class CashierController extends GetxController {
     await prefs.setString('imagePath', imagePath);
   }
 
-  void addToCheckout(String foodName, int quantity) {
-    var itemIndex =
-        checkoutItems.indexWhere((item) => item['name'] == foodName);
+  // Add a new item to Firestore stock collection
+  Future<void> createMenuItem(String name, int stock) async {
+    await firestore.collection('stock').add({
+      'name': name,
+      'stock': stock,
+      'createdAt': Timestamp.now(),
+    });
+  }
+
+  // Check stock availability before adding to checkout
+  Future<bool> isItemAvailable(String foodName) async {
+    var stockItem = await firestore.collection('stock').where('name', isEqualTo: foodName).get();
+    if (stockItem.docs.isEmpty) return false;
+
+    int availableStock = stockItem.docs.first.data()['stock'] ?? 0;
+    return availableStock > 0;
+  }
+
+  void addToCheckout(String foodName, int quantity) async {
+    bool available = await isItemAvailable(foodName);
+    if (!available) {
+      Get.snackbar("Out of Stock", "$foodName is out of stock and cannot be added to checkout.");
+      return;
+    }
+
+    var itemIndex = checkoutItems.indexWhere((item) => item['name'] == foodName);
     if (itemIndex == -1) {
       checkoutItems.add({'name': foodName, 'quantity': quantity});
     } else {
@@ -72,7 +93,6 @@ class CashierController extends GetxController {
     }
 
     addToCheckout(foodName, itemCounts[foodName]!);
-
     showCheckoutButton.value = itemCounts.values.any((count) => count > 0);
   }
 

@@ -4,6 +4,7 @@ import 'package:cashier/app/modules/checkout/views/checkout_view.dart';
 import 'package:cashier/app/modules/drawer/controllers/drawer_controller.dart';
 import 'package:cashier/app/modules/history/views/history_view.dart';
 import 'package:cashier/app/modules/income/views/income_view.dart';
+import 'package:cashier/app/modules/stok/view/laporan_stok.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,9 +12,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class CashierView extends StatelessWidget {
   final CashierController controller = Get.put(CashierController());
   final MyDrawerController drawerController = Get.put(MyDrawerController());
-  final GlobalKey<ScaffoldState> _cashierScaffoldKey =
-      GlobalKey<ScaffoldState>();
-
+  final GlobalKey<ScaffoldState> _cashierScaffoldKey = GlobalKey<ScaffoldState>();
   var searchQuery = ''.obs;
 
   String getFoodImage(String foodName) {
@@ -92,7 +91,10 @@ class CashierView extends StatelessWidget {
               title: const Text('Cashier'),
             ),
             ListTile(
-              onTap: drawerController.closeDrawer,
+              onTap: () {
+                drawerController.closeDrawer();
+                Get.to(() => StockPage());
+              },
               title: const Text('Laporan Stok'),
             ),
             ListTile(
@@ -155,12 +157,11 @@ class CashierView extends StatelessWidget {
                     searchQuery.value = value;
                   },
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 30),
                 Expanded(
                   child: Obx(() {
                     var filteredFoodItems = foodItems.where((foodItem) {
-                      String foodName =
-                          foodItem['name'].toString().toLowerCase();
+                      String foodName = foodItem['name'].toString().toLowerCase();
                       return foodName.contains(searchQuery.value.toLowerCase());
                     }).toList();
 
@@ -168,8 +169,7 @@ class CashierView extends StatelessWidget {
                         ? Center(
                             child: Text('No food items match your search.'))
                         : GridView.builder(
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               crossAxisSpacing: 10.0,
                               mainAxisSpacing: 10.0,
@@ -177,13 +177,9 @@ class CashierView extends StatelessWidget {
                             ),
                             itemCount: filteredFoodItems.length,
                             itemBuilder: (context, index) {
-                              String foodName =
-                                  filteredFoodItems[index]['name'];
+                              String foodName = filteredFoodItems[index]['name'];
                               String foodImage = getFoodImage(foodName);
-                              double foodPriceDouble = filteredFoodItems[index]
-                                          ['price']
-                                      ?.toDouble() ??
-                                  0.0;
+                              double foodPriceDouble = filteredFoodItems[index]['price']?.toDouble() ?? 0.0;
                               String foodPrice = foodPriceDouble > 0
                                   ? 'Rp ${foodPriceDouble.toStringAsFixed(2)}'
                                   : 'Harga Tidak Tersedia';
@@ -197,8 +193,7 @@ class CashierView extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(12.0),
                                       child: ConstrainedBox(
                                         constraints: BoxConstraints(
-                                          maxHeight:
-                                              120.0, // Fixed height for the image
+                                          maxHeight: 120.0, 
                                           minWidth: double.infinity,
                                         ),
                                         child: Image.asset(
@@ -226,8 +221,7 @@ class CashierView extends StatelessWidget {
                                     ),
                                     Flexible(
                                       child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           IconButton(
                                             icon: Icon(Icons.remove),
@@ -279,8 +273,7 @@ class CashierView extends StatelessWidget {
                           ),
                           ElevatedButton(
                             onPressed: () {
-                              controller.itemCounts
-                                  .forEach((foodName, quantity) {
+                              controller.itemCounts.forEach((foodName, quantity) {
                                 if (quantity > 0) {
                                   controller.addToCheckout(foodName, quantity);
                                 }
