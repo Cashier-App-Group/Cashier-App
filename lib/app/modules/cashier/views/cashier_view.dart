@@ -4,6 +4,7 @@ import 'package:cashier/app/modules/checkout/views/checkout_view.dart';
 import 'package:cashier/app/modules/drawer/controllers/drawer_controller.dart';
 import 'package:cashier/app/modules/history/views/history_view.dart';
 import 'package:cashier/app/modules/income/views/income_view.dart';
+import 'package:cashier/app/modules/stok/view/stok_view.dart' as stokView;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -96,7 +97,7 @@ class CashierView extends StatelessWidget {
             ListTile(
               onTap: () {
                 drawerController.closeDrawer();
-                Get.to(() => StockPage());
+                Get.to(() => stokView.StockManagementView());
               },
               title: const Text('Laporan Stok'),
             ),
@@ -202,8 +203,7 @@ class CashierView extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(12.0),
                                       child: ConstrainedBox(
                                         constraints: BoxConstraints(
-                                          maxHeight:
-                                              120.0, // Fixed height for the image
+                                          maxHeight: 120.0,
                                           minWidth: double.infinity,
                                         ),
                                         child: Image.asset(

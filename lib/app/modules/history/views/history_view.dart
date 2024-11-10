@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:cashier/app/modules/stok/view/stok_view.dart' as stokView;
 
 class HistoryView extends StatefulWidget {
   @override
@@ -16,20 +17,19 @@ class _HistoryViewState extends State<HistoryView> {
   final GlobalKey<ScaffoldState> _historyScaffoldKey =
       GlobalKey<ScaffoldState>();
 
-  DateTime selectedDate = DateTime.now();
+  DateTime? selectedDate;
+  bool isDateSelected = false;
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
+      initialDate: selectedDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.light().copyWith(
             primaryColor: Colors.white,
-            buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
-            primaryColorDark: Colors.white,
             scaffoldBackgroundColor: Colors.white,
             dialogBackgroundColor: Colors.white,
           ),
@@ -38,9 +38,10 @@ class _HistoryViewState extends State<HistoryView> {
       },
     );
 
-    if (picked != null && picked != selectedDate) {
+    if (picked != null) {
       setState(() {
         selectedDate = picked;
+        isDateSelected = true;
       });
     }
   }
@@ -94,7 +95,10 @@ class _HistoryViewState extends State<HistoryView> {
               title: const Text('Cashier'),
             ),
             ListTile(
-              onTap: drawerController.closeDrawer,
+              onTap: () {
+                drawerController.closeDrawer();
+                Get.to(() => stokView.StockManagementView());
+              },
               title: const Text('Laporan Stok'),
             ),
             ListTile(
@@ -116,7 +120,7 @@ class _HistoryViewState extends State<HistoryView> {
                 Get.offAllNamed('/login');
               },
               title: const Text('Logout'),
-            )
+            ),
           ],
         ),
       ),
@@ -125,20 +129,20 @@ class _HistoryViewState extends State<HistoryView> {
         child: StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('history')
-              .where('timestamp',
-                  isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime(
-                      selectedDate.year,
-                      selectedDate.month,
-                      selectedDate.day,
-                      0,
-                      0)))
-              .where('timestamp',
-                  isLessThanOrEqualTo: Timestamp.fromDate(DateTime(
-                      selectedDate.year,
-                      selectedDate.month,
-                      selectedDate.day,
-                      23,
-                      59)))
+              .where(
+                'timestamp',
+                isGreaterThanOrEqualTo: isDateSelected
+                    ? Timestamp.fromDate(DateTime(selectedDate!.year,
+                        selectedDate!.month, selectedDate!.day, 0, 0))
+                    : null,
+              )
+              .where(
+                'timestamp',
+                isLessThanOrEqualTo: isDateSelected
+                    ? Timestamp.fromDate(DateTime(selectedDate!.year,
+                        selectedDate!.month, selectedDate!.day, 23, 59))
+                    : null,
+              )
               .orderBy('timestamp', descending: true)
               .snapshots(),
           builder: (context, snapshot) {
@@ -202,14 +206,10 @@ class _HistoryViewState extends State<HistoryView> {
                                 ),
                               ),
                               SizedBox(height: 8.0),
-                              Text(
-                                'Tanggal: $formattedDate',
-                                style: TextStyle(fontSize: 12),
-                              ),
-                              Text(
-                                'Waktu: $formattedTime',
-                                style: TextStyle(fontSize: 12),
-                              ),
+                              Text('Tanggal: $formattedDate',
+                                  style: TextStyle(fontSize: 12)),
+                              Text('Waktu: $formattedTime',
+                                  style: TextStyle(fontSize: 12)),
                               SizedBox(height: 8.0),
                               Text(
                                 'Total: Rp ${total.toStringAsFixed(2)}',

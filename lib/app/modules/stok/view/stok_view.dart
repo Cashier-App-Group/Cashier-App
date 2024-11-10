@@ -1,11 +1,6 @@
-import 'package:cashier/app/modules/cashier/views/cashier_view.dart';
-import 'package:cashier/app/modules/drawer/controllers/drawer_controller.dart';
-import 'package:cashier/app/modules/history/views/history_view.dart';
-import 'package:cashier/app/modules/income/views/income_view.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:cashier/app/modules/stok/view/stok_view.dart' as stokView;
 
 class StockManagementView extends StatefulWidget {
   @override
@@ -15,8 +10,6 @@ class StockManagementView extends StatefulWidget {
 class _StockManagementViewState extends State<StockManagementView> {
   final List<Map<String, dynamic>> stockData = [];
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  final MyDrawerController drawerController = Get.put(MyDrawerController());
-  final GlobalKey<ScaffoldState> _stokScaffoldKey = GlobalKey<ScaffoldState>();
 
   void _addNewStockEntry(String date) async {
     final newStockEntry = {
@@ -24,7 +17,7 @@ class _StockManagementViewState extends State<StockManagementView> {
       'stokMasuk': 0,
       'stokKeluar': 0,
       'stokAkhir': 0,
-      'items': [],
+      'items': [], // Menyimpan daftar items terkait dengan tanggal tersebut
     };
 
     await firestore.collection('stok').doc(date).set(newStockEntry);
@@ -76,80 +69,14 @@ class _StockManagementViewState extends State<StockManagementView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _stokScaffoldKey,
       appBar: AppBar(
         title: Text('Manajemen Stok Harian'),
-        backgroundColor: Color(0xFFCD2B21),
         actions: [
           IconButton(
             icon: Icon(Icons.add),
             onPressed: _showDatePickerDialog,
           ),
         ],
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(
-              padding: EdgeInsets.zero,
-              child: Obx(() => Container(
-                    color: Color(0xFFCD2B21),
-                    padding: EdgeInsets.only(left: 16.0, top: 30.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            drawerController.userName.value.toUpperCase(),
-                            style: TextStyle(color: Colors.white, fontSize: 30),
-                          ),
-                          Text(
-                            drawerController.userEmail.value,
-                            style: TextStyle(color: Colors.white, fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )),
-            ),
-            ListTile(
-              onTap: () {
-                drawerController.closeDrawer();
-                Get.to(() => CashierView());
-              },
-              title: const Text('Cashier'),
-            ),
-            ListTile(
-              onTap: () {
-                drawerController.closeDrawer();
-                Get.to(() => stokView.StockManagementView());
-              },
-              title: const Text('Laporan Stok'),
-            ),
-            ListTile(
-              onTap: () {
-                drawerController.closeDrawer();
-                Get.to(() => HistoryView());
-              },
-              title: const Text('Riwayat Pembelian'),
-            ),
-            ListTile(
-              onTap: () {
-                drawerController.closeDrawer();
-                Get.to(() => PemasukanPerHariView());
-              },
-              title: const Text('Pemasukan Harian'),
-            ),
-            ListTile(
-              onTap: () async {
-                Get.offAllNamed('/login');
-              },
-              title: const Text('Logout'),
-            ),
-          ],
-        ),
       ),
       body: stockData.isEmpty
           ? Center(child: Text('No stock entries available.'))
@@ -168,7 +95,8 @@ class _StockManagementViewState extends State<StockManagementView> {
                             stock['tanggal'].isNotEmpty) {
                           Get.to(() => StockPage(
                                 stockId: stock['tanggal'],
-                                items: stock['items'],
+                                items: stock[
+                                    'items'], // Passing items for the selected date
                               ));
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -225,8 +153,8 @@ class _StockManagementViewState extends State<StockManagementView> {
 class StockPage extends StatefulWidget {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  final String stockId;
-  final List<dynamic> items;
+  final String stockId; // Tanggal stok (ID)
+  final List<dynamic> items; // Daftar item yang terkait dengan tanggal ini
 
   StockPage({Key? key, required this.stockId, required this.items})
       : super(key: key);
@@ -268,6 +196,7 @@ class _StockPageState extends State<StockPage> {
               final name = nameController.text.trim();
               final stock = int.tryParse(stockController.text.trim()) ?? 0;
               if (name.isNotEmpty) {
+                // Update stock data di Firebase
                 final updatedItems = [
                   ...widget.items,
                   {'name': name, 'stock': stock}
@@ -278,6 +207,8 @@ class _StockPageState extends State<StockPage> {
                     .update({
                   'items': updatedItems,
                 });
+
+                // Memperbarui tampilan dengan menambahkan item baru secara langsung
                 setState(() {
                   widget.items.add({'name': name, 'stock': stock});
                 });
@@ -295,12 +226,14 @@ class _StockPageState extends State<StockPage> {
   Future<void> removeItemFromStock(int index) async {
     final itemToRemove = widget.items[index];
 
+    // Menghapus item dari Firebase
     final updatedItems = List.from(widget.items)..removeAt(index);
     await widget.firestore
         .collection('stok')
         .doc(widget.stockId)
         .update({'items': updatedItems});
 
+    // Memperbarui tampilan setelah penghapusan
     setState(() {
       widget.items.removeAt(index);
     });
@@ -340,6 +273,7 @@ class _StockPageState extends State<StockPage> {
               final name = nameController.text.trim();
               final stock = int.tryParse(stockController.text.trim()) ?? 0;
               if (name.isNotEmpty) {
+                // Update item di Firebase
                 final updatedItems = List.from(widget.items)
                   ..[index] = {'name': name, 'stock': stock};
                 await widget.firestore
@@ -348,6 +282,8 @@ class _StockPageState extends State<StockPage> {
                     .update({
                   'items': updatedItems,
                 });
+
+                // Memperbarui tampilan setelah edit
                 setState(() {
                   widget.items[index] = {'name': name, 'stock': stock};
                 });
@@ -422,7 +358,8 @@ class _StockPageState extends State<StockPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await addItemToStock(context);
+          await addItemToStock(
+              context); // Memanggil fungsi asinkron dengan await
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.red[700],

@@ -4,6 +4,7 @@ import 'package:cashier/app/modules/history/views/history_view.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:cashier/app/modules/stok/view/stok_view.dart' as stokView;
 
 class PemasukanPerHariView extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -76,7 +77,10 @@ class PemasukanPerHariView extends StatelessWidget {
               title: const Text('Cashier'),
             ),
             ListTile(
-              onTap: drawerController.closeDrawer,
+              onTap: () {
+                drawerController.closeDrawer();
+                Get.to(() => stokView.StockManagementView());
+              },
               title: const Text('Laporan Stok'),
             ),
             ListTile(

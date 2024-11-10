@@ -101,4 +101,8 @@ class CashierController extends GetxController {
       }
     });
   }
+
+  void resetItemCounts() {
+    itemCounts.clear();
+  }
 }
