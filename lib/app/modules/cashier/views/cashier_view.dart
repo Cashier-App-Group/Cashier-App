@@ -6,8 +6,10 @@ import 'package:cashier/app/modules/discount/views/discount_view.dart';
 import 'package:cashier/app/modules/drawer/controllers/drawer_controller.dart';
 import 'package:cashier/app/modules/history/views/history_view.dart';
 import 'package:cashier/app/modules/income/views/income_view.dart';
+
 import 'package:cashier/app/modules/stock/views/Stock_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -244,8 +246,7 @@ class CashierView extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(12.0),
                                       child: ConstrainedBox(
                                         constraints: BoxConstraints(
-                                          maxHeight:
-                                              120.0, // Fixed height for the image
+                                          maxHeight: 120.0,
                                           minWidth: double.infinity,
                                         ),
                                         child: Image.asset(
