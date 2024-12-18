@@ -165,6 +165,30 @@ class _CheckoutViewState extends State<CheckoutView> {
                 );
               }
             }),
+            TextField(
+              controller: TextEditingController(),
+              decoration: InputDecoration(
+                labelText: 'Kode Diskon',
+                hintText: 'Masukkan kode diskon',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.check_circle, color: Colors.green),
+                  onPressed: () {},
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Diskon: Rp 0.00', // Nilai diskon sementara
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
+              ),
+            ),
+            SizedBox(height: 16),
             SizedBox(height: 16),
             Obx(() {
               return FutureBuilder<double>(

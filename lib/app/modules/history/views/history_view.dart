@@ -1,6 +1,11 @@
+import 'package:cashier/app/modules/cashier/controllers/theme_controller.dart';
 import 'package:cashier/app/modules/cashier/views/cashier_view.dart';
+import 'package:cashier/app/modules/cashier_member/views/cashier_member_view.dart';
+import 'package:cashier/app/modules/discount/views/discount_view.dart';
 import 'package:cashier/app/modules/drawer/controllers/drawer_controller.dart';
 import 'package:cashier/app/modules/income/views/income_view.dart';
+import 'package:cashier/app/modules/stock/views/Stock_view.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
@@ -17,6 +22,7 @@ class _HistoryViewState extends State<HistoryView> {
       GlobalKey<ScaffoldState>();
 
   DateTime selectedDate = DateTime.now();
+  final ThemeController themeController = Get.put(ThemeController());
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -86,37 +92,79 @@ class _HistoryViewState extends State<HistoryView> {
                     ),
                   )),
             ),
-            ListTile(
-              onTap: () {
-                drawerController.closeDrawer();
-                Get.to(() => CashierView());
-              },
-              title: const Text('Cashier'),
-            ),
-            ListTile(
-              onTap: drawerController.closeDrawer,
-              title: const Text('Laporan Stok'),
-            ),
-            ListTile(
-              onTap: () {
-                drawerController.closeDrawer();
-                Get.to(() => HistoryView());
-              },
-              title: const Text('Riwayat Pembelian'),
-            ),
-            ListTile(
-              onTap: () {
-                drawerController.closeDrawer();
-                Get.to(() => PemasukanPerHariView());
-              },
-              title: const Text('Pemasukan Harian'),
-            ),
+            Obx(() {
+              if (drawerController.userEmail.value.toLowerCase() ==
+                  'admin@gmail.com') {
+                return Column(
+                  children: [
+                    ListTile(
+                      onTap: () {
+                        drawerController.closeDrawer();
+                        Get.to(() => CashierView());
+                      },
+                      title: const Text('Cashier'),
+                    ),
+                    ListTile(
+                      onTap: () {
+                        drawerController.closeDrawer();
+                        Get.to(() => CashierListView());
+                      },
+                      title: const Text('Tambah Kasir'),
+                    ),
+                    ListTile(
+                      onTap: () {
+                        drawerController.closeDrawer;
+                        Get.to(() => DatePage());
+                      },
+                      title: const Text('Laporan Stok'),
+                    ),
+                    ListTile(
+                      onTap: () {
+                        drawerController.closeDrawer();
+                        Get.to(() => HistoryView());
+                      },
+                      title: const Text('Riwayat Pembelian'),
+                    ),
+                    ListTile(
+                      onTap: () {
+                        drawerController.closeDrawer();
+                        Get.to(() => PemasukanPerHariView());
+                      },
+                      title: const Text('Pemasukan Harian'),
+                    ),
+                    ListTile(
+                      onTap: () {
+                        drawerController.closeDrawer();
+                        Get.to(() => DiscountPage());
+                      },
+                      title: const Text('Diskon'),
+                    ),
+                    ListTile(
+                      title: Text('Theme'),
+                      trailing: Obx(() {
+                        return Switch(
+                          value: themeController.isDarkMode.value,
+                          onChanged: (value) {
+                            themeController.toggleTheme(value);
+                          },
+                        );
+                      }),
+                    ),
+                  ],
+                );
+              } else {
+                return Container();
+              }
+            }),
             ListTile(
               onTap: () async {
+                await FirebaseAuth.instance.signOut();
+                drawerController.userEmail.value = '';
+                drawerController.update();
                 Get.offAllNamed('/login');
               },
               title: const Text('Logout'),
-            )
+            ),
           ],
         ),
       ),
@@ -150,13 +198,6 @@ class _HistoryViewState extends State<HistoryView> {
             }
 
             var historyItems = snapshot.data?.docs ?? [];
-
-            if (historyItems.isEmpty) {
-              return Center(
-                child: Text('Tidak ada penjualan di tanggal ini',
-                    style: TextStyle(fontSize: 18)),
-              );
-            }
 
             return SingleChildScrollView(
               child: Column(
@@ -256,17 +297,54 @@ class _HistoryViewState extends State<HistoryView> {
   }
 }
 
-class HistoryDetailView extends StatelessWidget {
+class HistoryDetailView extends StatefulWidget {
   final String orderNumber;
 
   HistoryDetailView({Key? key, required this.orderNumber}) : super(key: key);
 
+  @override
+  _HistoryDetailViewState createState() => _HistoryDetailViewState();
+}
+
+class _HistoryDetailViewState extends State<HistoryDetailView> {
+  final TextEditingController _noteController = TextEditingController();
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
   void showPrintedAlert(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Nota Anda telah berhasil dicetak.'),
+        content: Text('Nota Anda telah berhasil dicetak dan disimpan.'),
         duration: Duration(seconds: 2),
         backgroundColor: Color(0xFFCD2B21),
+      ),
+    );
+  }
+
+  Future<void> saveNoteToFirestore(String orderNumber, String note) async {
+    if (note.isNotEmpty) {
+      try {
+        await FirebaseFirestore.instance.collection('notes').add({
+          'orderNumber': orderNumber,
+          'note': note,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      } catch (e) {
+        print('Error saving note: $e');
+      }
+    }
+  }
+
+  void showSaveNoteAlert(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Catatan berhasil disimpan.'),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.green,
       ),
     );
   }
@@ -280,7 +358,22 @@ class HistoryDetailView extends StatelessWidget {
           .get();
 
       if (snapshot.docs.isNotEmpty) {
-        return snapshot.docs.first.data();
+        var data = snapshot.docs.first.data();
+
+        // Fetch note from Firestore notes collection
+        final noteSnapshot = await FirebaseFirestore.instance
+            .collection('notes')
+            .where('orderNumber', isEqualTo: orderNumber)
+            .limit(1)
+            .get();
+
+        if (noteSnapshot.docs.isNotEmpty) {
+          data['note'] = noteSnapshot.docs.first.data()['note'];
+        } else {
+          data['note'] = '';
+        }
+
+        return data;
       } else {
         throw Exception('No data found');
       }
@@ -293,149 +386,177 @@ class HistoryDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Nota Pembelian'),
-        backgroundColor: Color(0xFFCD2B21),
-      ),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: fetchReceiptData(orderNumber),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData) {
-            return Center(child: Text('No data found.'));
-          } else {
-            var receiptData = snapshot.data!;
-            var cashierName = receiptData['cashierName'];
-            var checkoutItems =
-                List<Map<String, dynamic>>.from(receiptData['checkoutItems']);
-            var total = receiptData['total'];
-            var payment = receiptData['payment'];
-            var change = receiptData['change'];
+        appBar: AppBar(
+          title: Text('Nota Pembelian'),
+          backgroundColor: Color(0xFFCD2B21),
+        ),
+        body: FutureBuilder<Map<String, dynamic>>(
+          future: fetchReceiptData(widget.orderNumber),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData) {
+              return Center(child: Text('No data found.'));
+            } else {
+              var receiptData = snapshot.data!;
+              var cashierName = receiptData['cashierName'];
+              var checkoutItems =
+                  List<Map<String, dynamic>>.from(receiptData['checkoutItems']);
+              var total = receiptData['total'];
+              var payment = receiptData['payment'];
+              var change = receiptData['change'];
+              var note = receiptData['note'] ?? '';
 
-            return Center(
-              child: Container(
-                width: 300,
-                padding: EdgeInsets.all(16.0),
-                color: Colors.white,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Text(
-                        'KAF Chicken',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Center(
-                      child: Text(
-                        'Desa Tunggulsari',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                    ),
-                    Divider(thickness: 1.0, color: Colors.black),
-                    SizedBox(height: 8),
-                    Text('Tanggal: ${DateTime.now()}'),
-                    Text('Kasir: $cashierName'),
-                    SizedBox(height: 8),
-                    Divider(thickness: 1.0, color: Colors.black),
-                    SizedBox(height: 8),
+              _noteController.text = note;
 
-                    Text('Nomor Pembelian: $orderNumber'),
-                    SizedBox(height: 8),
-                    ...List.generate(checkoutItems.length, (index) {
-                      var item = checkoutItems[index];
-                      String name = item['name'] ?? 'Unknown';
-                      int quantity = item['quantity'] ?? 0;
-                      double price = item['price'] ?? 0.0;
-                      double totalPrice = quantity * price;
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('$name', style: TextStyle(fontSize: 16)),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Jumlah: $quantity'),
-                              Text('Harga: Rp${price.toStringAsFixed(2)}'),
-                            ],
+              return SingleChildScrollView(
+                child: Center(
+                  child: Container(
+                    width: 300,
+                    padding: EdgeInsets.all(16.0),
+                    color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Text(
+                            'KAF Chicken',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Total: Rp${totalPrice.toStringAsFixed(2)}'),
-                            ],
+                        ),
+                        SizedBox(height: 8),
+                        Center(
+                          child: Text(
+                            'Desa Tunggulsari',
+                            style: TextStyle(fontSize: 14),
                           ),
-                          Divider(thickness: 1.0, color: Colors.black),
-                        ],
-                      );
-                    }),
-                    SizedBox(height: 8),
-                    Divider(thickness: 1.0, color: Colors.black),
-                    SizedBox(height: 8),
-                    // Total Price
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Total',
-                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        Text(
-                          'Rp${total.toStringAsFixed(2)}',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        Divider(thickness: 1.0, color: Colors.black),
+                        SizedBox(height: 8),
+                        Text('Tanggal: ${DateTime.now()}'),
+                        Text('Kasir: $cashierName'),
+                        SizedBox(height: 8),
+                        Divider(thickness: 1.0, color: Colors.black),
+                        SizedBox(height: 8),
+                        Text('Nomor Pembelian: ${widget.orderNumber}'),
+                        SizedBox(height: 8),
+                        ...List.generate(checkoutItems.length, (index) {
+                          var item = checkoutItems[index];
+                          String name = item['name'] ?? 'Unknown';
+                          int quantity = item['quantity'] ?? 0;
+                          double price = item['price'] ?? 0.0;
+                          double totalPrice = quantity * price;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('$name', style: TextStyle(fontSize: 16)),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Jumlah: $quantity'),
+                                  Text('Harga: Rp${price.toStringAsFixed(2)}'),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                      'Total: Rp${totalPrice.toStringAsFixed(2)}'),
+                                ],
+                              ),
+                              Divider(thickness: 1.0, color: Colors.black),
+                            ],
+                          );
+                        }),
+                        SizedBox(height: 8),
+                        Divider(thickness: 1.0, color: Colors.black),
+                        SizedBox(height: 8),
+                        // Total Price
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Total',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              'Rp${total.toStringAsFixed(2)}',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Uang Dibayar'),
+                            Text('Rp${payment.toStringAsFixed(2)}'),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Kembalian'),
+                            Text('Rp${change.toStringAsFixed(2)}'),
+                          ],
+                        ),
+                        SizedBox(height: 16),
+                        Divider(thickness: 1.0, color: Colors.black),
+                        SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _noteController,
+                                decoration: InputDecoration(
+                                  labelText: 'Catatan (Opsional)',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.save, color: Colors.blue),
+                              onPressed: () async {
+                                String note = _noteController.text;
+                                await saveNoteToFirestore(
+                                    widget.orderNumber, note);
+
+                                showSaveNoteAlert(context);
+                                setState(() {
+                                  _noteController.text = note;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 16),
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              showPrintedAlert(context);
+                            },
+                            child: Text('Cetak Nota'),
+                            style: ElevatedButton.styleFrom(
+                              primary: Color(0xFFCD2B21),
+                              onPrimary: Colors.white,
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Uang Dibayar'),
-                        Text('Rp${payment.toStringAsFixed(2)}'),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Kembalian'),
-                        Text('Rp${change.toStringAsFixed(2)}'),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Divider(thickness: 1.0, color: Colors.black),
-                    Center(
-                      child: Text(
-                        'Terima Kasih!',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          showPrintedAlert(context);
-                        },
-                        child: Text('Cetak Nota'),
-                        style: ElevatedButton.styleFrom(
-                            primary: Color(0xFFCD2B21),
-                            onPrimary: Colors.white),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          }
-        },
-      ),
-    );
+              );
+            }
+          },
+        ));
   }
 }

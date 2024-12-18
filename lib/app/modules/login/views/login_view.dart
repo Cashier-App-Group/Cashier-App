@@ -1,5 +1,4 @@
 import 'package:cashier/app/modules/authentication/controllers/auth_controller.dart';
-import 'package:cashier/app/modules/register/views/register_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -145,29 +144,6 @@ class LoginView extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Get.to(() => RegisterView());
-                },
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black,
-                    ),
-                    children: <TextSpan>[
-                      TextSpan(text: 'New Cashier? '),
-                      TextSpan(
-                        text: 'Register now',
-                        style: TextStyle(
-                          color: Color(0xFFCD2B21),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           ),
         ),

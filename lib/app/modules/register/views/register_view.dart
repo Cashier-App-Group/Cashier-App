@@ -1,11 +1,7 @@
 import 'package:cashier/app/data/models/profile_model.dart';
 import 'package:cashier/app/modules/authentication/controllers/auth_controller.dart';
-import 'package:cashier/app/modules/home/views/home_view.dart';
-import 'package:cashier/app/modules/login/views/login_view.dart';
 import 'package:cashier/app/modules/register/controllers/register_controller.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 
 class RegisterView extends GetView<RegisterController> {
@@ -36,6 +32,15 @@ class RegisterView extends GetView<RegisterController> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        appBar: AppBar(
+          title: Text('Register'),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Get.back();
+            },
+          ),
+        ),
         resizeToAvoidBottomInset: false,
         backgroundColor: Colors.white,
         body: Center(
@@ -58,7 +63,7 @@ class RegisterView extends GetView<RegisterController> {
                 ),
                 SizedBox(height: 0),
                 Text(
-                  'by creating a free account.',
+                  'add new cashier account',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.black,
@@ -210,29 +215,6 @@ class RegisterView extends GetView<RegisterController> {
                   ),
                 ),
                 SizedBox(height: 20),
-                GestureDetector(
-                  onTap: () {
-                    Get.to(() => LoginView());
-                  },
-                  child: RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.black,
-                      ),
-                      children: <TextSpan>[
-                        TextSpan(text: 'Already a Cashier? '),
-                        TextSpan(
-                          text: 'Login',
-                          style: TextStyle(
-                            color: Color(0xFFCD2B21),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               ],
             ),
           ),

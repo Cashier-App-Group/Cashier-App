@@ -1,9 +1,13 @@
-import 'package:cashier/app/modules/authentication/controllers/auth_controller.dart';
 import 'package:cashier/app/modules/cashier/controllers/cashier_controller.dart';
+import 'package:cashier/app/modules/cashier/controllers/theme_controller.dart';
+import 'package:cashier/app/modules/cashier_member/views/cashier_member_view.dart';
 import 'package:cashier/app/modules/checkout/views/checkout_view.dart';
+import 'package:cashier/app/modules/discount/views/discount_view.dart';
 import 'package:cashier/app/modules/drawer/controllers/drawer_controller.dart';
 import 'package:cashier/app/modules/history/views/history_view.dart';
 import 'package:cashier/app/modules/income/views/income_view.dart';
+import 'package:cashier/app/modules/stock/views/Stock_view.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,6 +17,7 @@ class CashierView extends StatelessWidget {
   final MyDrawerController drawerController = Get.put(MyDrawerController());
   final GlobalKey<ScaffoldState> _cashierScaffoldKey =
       GlobalKey<ScaffoldState>();
+  final ThemeController themeController = Get.put(ThemeController());
 
   var searchQuery = ''.obs;
 
@@ -84,33 +89,75 @@ class CashierView extends StatelessWidget {
                     ),
                   )),
             ),
-            ListTile(
-              onTap: () {
-                drawerController.closeDrawer();
-                Get.to(() => CashierView());
-              },
-              title: const Text('Cashier'),
-            ),
-            ListTile(
-              onTap: drawerController.closeDrawer,
-              title: const Text('Laporan Stok'),
-            ),
-            ListTile(
-              onTap: () {
-                drawerController.closeDrawer();
-                Get.to(() => HistoryView());
-              },
-              title: const Text('Riwayat Pembelian'),
-            ),
-            ListTile(
-              onTap: () {
-                drawerController.closeDrawer();
-                Get.to(() => PemasukanPerHariView());
-              },
-              title: const Text('Pemasukan Harian'),
-            ),
+            Obx(() {
+              if (drawerController.userEmail.value.toLowerCase() ==
+                  'admin@gmail.com') {
+                return Column(
+                  children: [
+                    ListTile(
+                      onTap: () {
+                        drawerController.closeDrawer();
+                        Get.to(() => CashierView());
+                      },
+                      title: const Text('Cashier'),
+                    ),
+                    ListTile(
+                      onTap: () {
+                        drawerController.closeDrawer();
+                        Get.to(() => CashierListView());
+                      },
+                      title: const Text('Tambah Kasir'),
+                    ),
+                    ListTile(
+                      onTap: () {
+                        drawerController.closeDrawer;
+                        Get.to(() => DatePage());
+                      },
+                      title: const Text('Laporan Stok'),
+                    ),
+                    ListTile(
+                      onTap: () {
+                        drawerController.closeDrawer();
+                        Get.to(() => HistoryView());
+                      },
+                      title: const Text('Riwayat Pembelian'),
+                    ),
+                    ListTile(
+                      onTap: () {
+                        drawerController.closeDrawer();
+                        Get.to(() => PemasukanPerHariView());
+                      },
+                      title: const Text('Pemasukan Harian'),
+                    ),
+                    ListTile(
+                      onTap: () {
+                        drawerController.closeDrawer();
+                        Get.to(() => DiscountPage());
+                      },
+                      title: const Text('Diskon'),
+                    ),
+                    ListTile(
+                      title: Text('Theme'),
+                      trailing: Obx(() {
+                        return Switch(
+                          value: themeController.isDarkMode.value,
+                          onChanged: (value) {
+                            themeController.toggleTheme(value);
+                          },
+                        );
+                      }),
+                    ),
+                  ],
+                );
+              } else {
+                return Container();
+              }
+            }),
             ListTile(
               onTap: () async {
+                await FirebaseAuth.instance.signOut();
+                drawerController.userEmail.value = ''; // Clear email
+                drawerController.update(); // Update UI
                 Get.offAllNamed('/login');
               },
               title: const Text('Logout'),
