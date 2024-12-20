@@ -1,5 +1,6 @@
 import 'package:cashier/app/data/models/profile_model.dart';
 import 'package:cashier/app/modules/authentication/controllers/auth_controller.dart';
+import 'package:cashier/app/modules/event/controllers/event_controller.dart';
 import 'package:cashier/app/modules/register/controllers/register_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,6 +12,7 @@ class RegisterView extends GetView<RegisterController> {
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
+  final EventController themeController = Get.put(EventController());
 
   RegisterView({Key? key}) : super(key: key);
 
@@ -201,7 +203,11 @@ class RegisterView extends GetView<RegisterController> {
                 ElevatedButton(
                   onPressed: _submitProfile,
                   style: ElevatedButton.styleFrom(
-                    primary: Color(0xFFCD2B21),
+                    primary: themeController.isKemerdekaanTheme.value
+                        ? Color(0xFFe6292f)
+                        : themeController.isIdulFitriTheme.value
+                            ? Color(0xFF308c1d)
+                            : Color(0xFFCD2B21),
                     onPrimary: Colors.white,
                     padding:
                         EdgeInsets.symmetric(vertical: 12.0, horizontal: 145.0),

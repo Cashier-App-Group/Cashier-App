@@ -1,3 +1,4 @@
+import 'package:cashier/app/modules/event/controllers/event_controller.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,6 +11,7 @@ class StockManagementView extends StatefulWidget {
 class _StockManagementViewState extends State<StockManagementView> {
   final List<Map<String, dynamic>> stockData = [];
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final EventController themeController = Get.put(EventController());
 
   void _addNewStockEntry(String date) async {
     final newStockEntry = {

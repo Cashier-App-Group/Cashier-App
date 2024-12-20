@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:cashier/app/modules/cashier/views/cashier_view.dart';
+import 'package:cashier/app/modules/event/controllers/event_controller.dart';
 import 'package:cashier/app/modules/register/views/register_view.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,6 +13,7 @@ class ReceiptView extends StatelessWidget {
   final double total;
   final double payment;
   final double change;
+  final EventController themeController = Get.put(EventController());
 
   ReceiptView({
     Key? key,
@@ -129,7 +131,11 @@ class ReceiptView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Nota Pembelian'),
-        backgroundColor: Color(0xFFCD2B21),
+        backgroundColor: themeController.isKemerdekaanTheme.value
+            ? Color(0xFFe6292f)
+            : themeController.isIdulFitriTheme.value
+                ? Color(0xFF308c1d)
+                : Color(0xFFCD2B21),
       ),
       body: Center(
         child: Container(
@@ -256,7 +262,12 @@ class ReceiptView extends StatelessWidget {
                   },
                   child: Text('Cetak Nota'),
                   style: ElevatedButton.styleFrom(
-                      primary: Color(0xFFCD2B21), onPrimary: Colors.white),
+                      primary: themeController.isKemerdekaanTheme.value
+                          ? Color(0xFFe6292f) // Kemerdekaan theme color
+                          : themeController.isIdulFitriTheme.value
+                              ? Color(0xFF308c1d) // Idul Fitri theme color
+                              : Color(0xFFCD2B21),
+                      onPrimary: Colors.white),
                 ),
               ),
             ],

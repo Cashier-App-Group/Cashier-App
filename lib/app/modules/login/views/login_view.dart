@@ -1,4 +1,5 @@
 import 'package:cashier/app/modules/authentication/controllers/auth_controller.dart';
+import 'package:cashier/app/modules/event/controllers/event_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -6,6 +7,7 @@ class LoginView extends StatelessWidget {
   final AuthController authController = Get.put(AuthController());
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final EventController themeController = Get.put(EventController());
 
   LoginView({Key? key}) : super(key: key);
 
@@ -130,7 +132,11 @@ class LoginView extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  primary: Color(0xFFCD2B21),
+                  primary: themeController.isKemerdekaanTheme.value
+                      ? Color(0xFFe6292f)
+                      : themeController.isIdulFitriTheme.value
+                          ? Color(0xFF308c1d)
+                          : Color(0xFFCD2B21),
                   onPrimary: Colors.white,
                   padding:
                       EdgeInsets.symmetric(vertical: 12.0, horizontal: 145.0),

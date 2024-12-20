@@ -1,22 +1,22 @@
-import 'package:cashier/app/modules/cashier/controllers/theme_controller.dart';
 import 'package:cashier/app/modules/cashier/views/cashier_view.dart';
 import 'package:cashier/app/modules/cashier_member/views/cashier_member_view.dart';
 import 'package:cashier/app/modules/discount/views/discount_view.dart';
 import 'package:cashier/app/modules/drawer/controllers/drawer_controller.dart';
+import 'package:cashier/app/modules/event/controllers/event_controller.dart';
+import 'package:cashier/app/modules/event/views/event_view.dart';
 import 'package:cashier/app/modules/history/views/history_view.dart';
 import 'package:cashier/app/modules/stock/views/Stock_view.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:cashier/app/modules/stok/view/stok_view.dart' as stokView;
 
 class PemasukanPerHariView extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final MyDrawerController drawerController = Get.put(MyDrawerController());
   final GlobalKey<ScaffoldState> _incomeScaffoldKey =
       GlobalKey<ScaffoldState>();
-  final ThemeController themeController = Get.put(ThemeController());
+  final EventController themeController = Get.put(EventController());
 
   Future<Map<String, int>> _getPemasukanPerHari() async {
     Map<String, int> pemasukanPerTanggal = {};
@@ -46,41 +46,43 @@ class PemasukanPerHariView extends StatelessWidget {
       key: _incomeScaffoldKey,
       appBar: AppBar(
         title: Text('Pemasukan Per Hari'),
-        backgroundColor: Color(0xFFCD2B21),
+        backgroundColor: themeController.isKemerdekaanTheme.value
+            ? Color(0xFFe6292f)
+            : themeController.isIdulFitriTheme.value
+                ? Color(0xFF308c1d)
+                : Color(0xFFCD2B21),
         elevation: 4,
       ),
       drawer: Drawer(
         child: ListView(
-          padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color(0xFFCD2B21),
-                borderRadius:
-                    BorderRadius.vertical(bottom: Radius.circular(30)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 16.0, top: 30.0),
-                child: Obx(() {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        drawerController.userName.value.toUpperCase(),
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold),
+              padding: EdgeInsets.zero,
+              child: Obx(() => Container(
+                    color: themeController.isKemerdekaanTheme.value
+                        ? Color(0xFFe6292f)
+                        : themeController.isIdulFitriTheme.value
+                            ? Color(0xFF308c1d)
+                            : Color(0xFFCD2B21),
+                    padding: EdgeInsets.only(left: 16.0, top: 30.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            drawerController.userName.value.toUpperCase(),
+                            style: TextStyle(color: Colors.white, fontSize: 30),
+                          ),
+                          Text(
+                            drawerController.userEmail.value,
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ],
                       ),
-                      Text(
-                        drawerController.userEmail.value,
-                        style: TextStyle(color: Colors.white70, fontSize: 16),
-                      ),
-                    ],
-                  );
-                }),
-              ),
+                    ),
+                  )),
             ),
             Obx(() {
               if (drawerController.userEmail.value.toLowerCase() ==
@@ -130,15 +132,11 @@ class PemasukanPerHariView extends StatelessWidget {
                       title: const Text('Diskon'),
                     ),
                     ListTile(
-                      title: Text('Theme'),
-                      trailing: Obx(() {
-                        return Switch(
-                          value: themeController.isDarkMode.value,
-                          onChanged: (value) {
-                            themeController.toggleTheme(value);
-                          },
-                        );
-                      }),
+                      onTap: () {
+                        drawerController.closeDrawer();
+                        Get.to(() => EventControlPage());
+                      },
+                      title: const Text('Theme'),
                     ),
                   ],
                 );
@@ -151,6 +149,7 @@ class PemasukanPerHariView extends StatelessWidget {
                 await FirebaseAuth.instance.signOut();
                 drawerController.userEmail.value = '';
                 drawerController.update();
+                Get.offAllNamed('/login');
               },
               title: const Text('Logout'),
             ),

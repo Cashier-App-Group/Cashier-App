@@ -1,5 +1,7 @@
 import 'package:cashier/app/modules/cashier/controllers/cashier_controller.dart';
+import 'package:cashier/app/modules/cashier/controllers/theme_controller.dart';
 import 'package:cashier/app/modules/checkout/views/receipt_view.dart';
+import 'package:cashier/app/modules/event/controllers/event_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,6 +17,7 @@ class _CheckoutViewState extends State<CheckoutView> {
   double kembalian = 0.0;
   bool isProcessEnabled = false;
   String cashierName = '';
+  final EventController themeController = Get.put(EventController());
 
   @override
   void initState() {
@@ -77,8 +80,12 @@ class _CheckoutViewState extends State<CheckoutView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Checkout'),
-        backgroundColor: Color(0xFFCD2B21),
+        title: const Text('Checkout'),
+        backgroundColor: themeController.isKemerdekaanTheme.value
+            ? Color(0xFFe6292f)
+            : themeController.isIdulFitriTheme.value
+                ? Color(0xFF308c1d)
+                : Color(0xFFCD2B21),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -181,7 +188,7 @@ class _CheckoutViewState extends State<CheckoutView> {
             ),
             SizedBox(height: 16),
             Text(
-              'Diskon: Rp 0.00', // Nilai diskon sementara
+              'Diskon: Rp 0.00',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -269,7 +276,11 @@ class _CheckoutViewState extends State<CheckoutView> {
                                   ))
                               : null,
                           style: ElevatedButton.styleFrom(
-                            primary: Color(0xFFCD2B21),
+                            primary: themeController.isKemerdekaanTheme.value
+                                ? Color(0xFFe6292f)
+                                : themeController.isIdulFitriTheme.value
+                                    ? Color(0xFF308c1d)
+                                    : Color(0xFFCD2B21),
                             onPrimary: Colors.white,
                             padding: EdgeInsets.symmetric(vertical: 12.0),
                             shape: RoundedRectangleBorder(

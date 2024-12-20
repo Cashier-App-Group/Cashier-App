@@ -1,8 +1,9 @@
-import 'package:cashier/app/modules/cashier/controllers/theme_controller.dart';
 import 'package:cashier/app/modules/cashier/views/cashier_view.dart';
 import 'package:cashier/app/modules/cashier_member/views/cashier_member_view.dart';
 import 'package:cashier/app/modules/discount/views/discount_view.dart';
 import 'package:cashier/app/modules/drawer/controllers/drawer_controller.dart';
+import 'package:cashier/app/modules/event/controllers/event_controller.dart';
+import 'package:cashier/app/modules/event/views/event_view.dart';
 import 'package:cashier/app/modules/income/views/income_view.dart';
 import 'package:cashier/app/modules/stock/views/Stock_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:cashier/app/modules/stok/view/stok_view.dart' as stokView;
 
 class HistoryView extends StatefulWidget {
   @override
@@ -22,7 +22,7 @@ class _HistoryViewState extends State<HistoryView> {
   final GlobalKey<ScaffoldState> _historyScaffoldKey =
       GlobalKey<ScaffoldState>();
 
-  final ThemeController themeController = Get.put(ThemeController());
+  final EventController themeController = Get.put(EventController());
 
   DateTime? selectedDate;
   bool isDateSelected = false;
@@ -59,7 +59,11 @@ class _HistoryViewState extends State<HistoryView> {
       key: _historyScaffoldKey,
       appBar: AppBar(
         title: Text('Riwayat Pembelian'),
-        backgroundColor: Color(0xFFCD2B21),
+        backgroundColor: themeController.isKemerdekaanTheme.value
+            ? Color(0xFFe6292f)
+            : themeController.isIdulFitriTheme.value
+                ? Color(0xFF308c1d)
+                : Color(0xFFCD2B21),
         actions: [
           IconButton(
             icon: Icon(Icons.calendar_today),
@@ -73,7 +77,11 @@ class _HistoryViewState extends State<HistoryView> {
             DrawerHeader(
               padding: EdgeInsets.zero,
               child: Obx(() => Container(
-                    color: Color(0xFFCD2B21),
+                    color: themeController.isKemerdekaanTheme.value
+                        ? Color(0xFFe6292f)
+                        : themeController.isIdulFitriTheme.value
+                            ? Color(0xFF308c1d)
+                            : Color(0xFFCD2B21),
                     padding: EdgeInsets.only(left: 16.0, top: 30.0),
                     child: Align(
                       alignment: Alignment.centerLeft,
@@ -142,15 +150,11 @@ class _HistoryViewState extends State<HistoryView> {
                       title: const Text('Diskon'),
                     ),
                     ListTile(
-                      title: Text('Theme'),
-                      trailing: Obx(() {
-                        return Switch(
-                          value: themeController.isDarkMode.value,
-                          onChanged: (value) {
-                            themeController.toggleTheme(value);
-                          },
-                        );
-                      }),
+                      onTap: () {
+                        drawerController.closeDrawer();
+                        Get.to(() => EventControlPage());
+                      },
+                      title: const Text('Theme'),
                     ),
                   ],
                 );
@@ -306,6 +310,7 @@ class HistoryDetailView extends StatefulWidget {
 
 class _HistoryDetailViewState extends State<HistoryDetailView> {
   final TextEditingController _noteController = TextEditingController();
+  final EventController themeController = Get.put(EventController());
 
   @override
   void dispose() {
@@ -386,7 +391,11 @@ class _HistoryDetailViewState extends State<HistoryDetailView> {
     return Scaffold(
         appBar: AppBar(
           title: Text('Nota Pembelian'),
-          backgroundColor: Color(0xFFCD2B21),
+          backgroundColor: themeController.isKemerdekaanTheme.value
+              ? Color(0xFFe6292f)
+              : themeController.isIdulFitriTheme.value
+                  ? Color(0xFF308c1d)
+                  : Color(0xFFCD2B21),
         ),
         body: FutureBuilder<Map<String, dynamic>>(
           future: fetchReceiptData(widget.orderNumber),
@@ -543,7 +552,11 @@ class _HistoryDetailViewState extends State<HistoryDetailView> {
                             },
                             child: Text('Cetak Nota'),
                             style: ElevatedButton.styleFrom(
-                              primary: Color(0xFFCD2B21),
+                              primary: themeController.isKemerdekaanTheme.value
+                                  ? Color(0xFFe6292f)
+                                  : themeController.isIdulFitriTheme.value
+                                      ? Color(0xFF308c1d)
+                                      : Color(0xFFCD2B21),
                               onPrimary: Colors.white,
                             ),
                           ),

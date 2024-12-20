@@ -2,6 +2,8 @@ import 'package:cashier/app/modules/cashier/controllers/theme_controller.dart';
 import 'package:cashier/app/modules/cashier/views/cashier_view.dart';
 import 'package:cashier/app/modules/discount/views/discount_view.dart';
 import 'package:cashier/app/modules/drawer/controllers/drawer_controller.dart';
+import 'package:cashier/app/modules/event/controllers/event_controller.dart';
+import 'package:cashier/app/modules/event/views/event_view.dart';
 import 'package:cashier/app/modules/history/views/history_view.dart';
 import 'package:cashier/app/modules/income/views/income_view.dart';
 import 'package:cashier/app/modules/register/views/register_view.dart';
@@ -16,7 +18,7 @@ class CashierListView extends StatelessWidget {
   final MyDrawerController drawerController = Get.put(MyDrawerController());
   final GlobalKey<ScaffoldState> _cashiermemberScaffoldKey =
       GlobalKey<ScaffoldState>();
-  final ThemeController themeController = Get.put(ThemeController());
+  final EventController themeController = Get.put(EventController());
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,11 @@ class CashierListView extends StatelessWidget {
       key: _cashiermemberScaffoldKey,
       appBar: AppBar(
         title: Text('Cashier List'),
-        backgroundColor: Color(0xFFCD2B21),
+        backgroundColor: themeController.isKemerdekaanTheme.value
+            ? Color(0xFFe6292f)
+            : themeController.isIdulFitriTheme.value
+                ? Color(0xFF308c1d)
+                : Color(0xFFCD2B21),
         actions: [
           IconButton(
             icon: Icon(Icons.add),
@@ -40,7 +46,11 @@ class CashierListView extends StatelessWidget {
             DrawerHeader(
               padding: EdgeInsets.zero,
               child: Obx(() => Container(
-                    color: Color(0xFFCD2B21),
+                    color: themeController.isKemerdekaanTheme.value
+                        ? Color(0xFFe6292f)
+                        : themeController.isIdulFitriTheme.value
+                            ? Color(0xFF308c1d)
+                            : Color(0xFFCD2B21),
                     padding: EdgeInsets.only(left: 16.0, top: 30.0),
                     child: Align(
                       alignment: Alignment.centerLeft,
@@ -109,15 +119,11 @@ class CashierListView extends StatelessWidget {
                       title: const Text('Diskon'),
                     ),
                     ListTile(
-                      title: Text('Theme'),
-                      trailing: Obx(() {
-                        return Switch(
-                          value: themeController.isDarkMode.value,
-                          onChanged: (value) {
-                            themeController.toggleTheme(value);
-                          },
-                        );
-                      }),
+                      onTap: () {
+                        drawerController.closeDrawer();
+                        Get.to(() => EventControlPage());
+                      },
+                      title: const Text('Theme'),
                     ),
                   ],
                 );
