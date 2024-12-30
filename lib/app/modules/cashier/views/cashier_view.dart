@@ -63,6 +63,17 @@ class CashierView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get the screen width to determine layout
+    final screenWidth = MediaQuery.of(context).size.width;
+    // Calculate number of grid columns based on screen width
+    final crossAxisCount = screenWidth > 900
+        ? 4
+        : screenWidth > 600
+            ? 3
+            : 2;
+    // Adjust the child aspect ratio based on screen size
+    final childAspectRatio = screenWidth > 600 ? 0.8 : 0.75;
+
     return Obx(() {
       return Scaffold(
         key: _cashierScaffoldKey,
@@ -75,6 +86,8 @@ class CashierView extends StatelessWidget {
                   : Color(0xFFCD2B21),
         ),
         drawer: Drawer(
+          // Make drawer wider on tablets
+          width: screenWidth > 600 ? 350 : 304,
           child: ListView(
             children: [
               DrawerHeader(
@@ -85,7 +98,10 @@ class CashierView extends StatelessWidget {
                           : themeController.isIdulFitriTheme.value
                               ? Color(0xFF308c1d)
                               : Color(0xFFCD2B21),
-                      padding: EdgeInsets.only(left: 16.0, top: 30.0),
+                      padding: EdgeInsets.only(
+                        left: screenWidth > 600 ? 24.0 : 16.0,
+                        top: screenWidth > 600 ? 40.0 : 30.0,
+                      ),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Column(
@@ -94,13 +110,17 @@ class CashierView extends StatelessWidget {
                           children: [
                             Text(
                               drawerController.userName.value.toUpperCase(),
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 30),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: screenWidth > 600 ? 36 : 30,
+                              ),
                             ),
                             Text(
                               drawerController.userEmail.value,
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 16),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: screenWidth > 600 ? 20 : 16,
+                              ),
                             ),
                           ],
                         ),
@@ -117,56 +137,96 @@ class CashierView extends StatelessWidget {
                           drawerController.closeDrawer();
                           Get.to(() => CashierView());
                         },
-                        title: const Text('Cashier'),
+                        title: Text(
+                          'Cashier',
+                          style: TextStyle(
+                            fontSize: screenWidth > 600 ? 18 : 16,
+                          ),
+                        ),
                       ),
                       ListTile(
                         onTap: () {
                           drawerController.closeDrawer();
                           Get.to(() => CashierListView());
                         },
-                        title: const Text('Tambah Kasir'),
+                        title: Text(
+                          'Tambah Kasir',
+                          style: TextStyle(
+                            fontSize: screenWidth > 600 ? 18 : 16,
+                          ),
+                        ),
                       ),
                       ListTile(
                         onTap: () {
                           drawerController.closeDrawer;
                           Get.to(() => DatePage());
                         },
-                        title: const Text('Laporan Stok'),
+                        title: Text(
+                          'Laporan Stok',
+                          style: TextStyle(
+                            fontSize: screenWidth > 600 ? 18 : 16,
+                          ),
+                        ),
                       ),
                       ListTile(
                         onTap: () {
                           drawerController.closeDrawer();
                           Get.to(() => HistoryView());
                         },
-                        title: const Text('Riwayat Pembelian'),
+                        title: Text(
+                          'Riwayat Pembelian',
+                          style: TextStyle(
+                            fontSize: screenWidth > 600 ? 18 : 16,
+                          ),
+                        ),
                       ),
                       ListTile(
                         onTap: () {
                           drawerController.closeDrawer();
                           Get.to(() => PemasukanPerHariView());
                         },
-                        title: const Text('Pemasukan Harian'),
+                        title: Text(
+                          'Pemasukan Harian',
+                          style: TextStyle(
+                            fontSize: screenWidth > 600 ? 18 : 16,
+                          ),
+                        ),
                       ),
                       ListTile(
                         onTap: () {
                           drawerController.closeDrawer();
                           Get.to(() => DiscountPage());
                         },
-                        title: const Text('Diskon'),
+                        title: Text(
+                          'Diskon',
+                          style: TextStyle(
+                            fontSize: screenWidth > 600 ? 18 : 16,
+                          ),
+                        ),
                       ),
                       ListTile(
                         onTap: () {
                           drawerController.closeDrawer();
                           Get.to(() => EventControlPage());
                         },
-                        title: const Text('Theme'),
+                        title: Text(
+                          'Theme',
+                          style: TextStyle(
+                            fontSize: screenWidth > 600 ? 18 : 16,
+                          ),
+                        ),
                       ),
                       ListTile(
                         onTap: () {
                           drawerController.closeDrawer();
                           Get.to(() => LocationView());
                         },
-                        title: const Text('Location'),
+                        title: Text(
+                          'Location',
+                          style: TextStyle(
+                            fontSize: screenWidth > 600 ? 18 : 16,
+                          ),
+                        ),
                       ),
                     ],
                   );
@@ -181,13 +241,18 @@ class CashierView extends StatelessWidget {
                   drawerController.update();
                   Get.offAllNamed('/login');
                 },
-                title: const Text('Logout'),
+                title: Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontSize: screenWidth > 600 ? 18 : 16,
+                  ),
+                ),
               ),
             ],
           ),
         ),
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(screenWidth > 600 ? 24.0 : 16.0),
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance.collection('menu').snapshots(),
             builder: (context, snapshot) {
@@ -208,52 +273,47 @@ class CashierView extends StatelessWidget {
                 String foodName = foodItem['name'].toString().toLowerCase();
                 return foodName.contains(searchQuery.value.toLowerCase());
               }).toList();
+
               return Column(
                 children: [
-                  if (themeController.isIdulFitriTheme.value)
+                  if (themeController.isIdulFitriTheme.value) ...[
                     SizedBox(
-                      height: 200.0,
+                      height: screenWidth > 600 ? 300.0 : 200.0,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16.0),
                         child: PageView(
+                          controller: _controller,
                           children: [
-                            Image.asset(
-                              'assets/ramadhan1.png',
-                              fit: BoxFit.cover,
-                            ),
-                            Image.asset(
-                              'assets/ramadhan2.png',
-                              fit: BoxFit.cover,
-                            ),
-                            Image.asset(
-                              'assets/ramadhan3.png',
-                              fit: BoxFit.cover,
-                            ),
-                            Image.asset(
-                              'assets/ramadhan4.png',
-                              fit: BoxFit.cover,
-                            ),
+                            Image.asset('assets/ramadhan1.png',
+                                fit: BoxFit.cover),
+                            Image.asset('assets/ramadhan2.png',
+                                fit: BoxFit.cover),
+                            Image.asset('assets/ramadhan3.png',
+                                fit: BoxFit.cover),
+                            Image.asset('assets/ramadhan4.png',
+                                fit: BoxFit.cover),
                           ],
                         ),
                       ),
                     ),
-                  if (themeController.isIdulFitriTheme.value)
                     SmoothPageIndicator(
                       controller: _controller,
-                      count: 4, // Jumlah gambar dalam PageView
+                      count: 4,
                       effect: WormEffect(
-                        dotWidth: 10.0,
-                        dotHeight: 10.0,
+                        dotWidth: screenWidth > 600 ? 12.0 : 10.0,
+                        dotHeight: screenWidth > 600 ? 12.0 : 10.0,
                         dotColor: Colors.grey,
                         activeDotColor: Colors.blue,
                       ),
                     ),
-                  if (themeController.isKemerdekaanTheme.value)
+                  ],
+                  if (themeController.isKemerdekaanTheme.value) ...[
                     SizedBox(
-                      height: 200.0,
+                      height: screenWidth > 600 ? 300.0 : 200.0,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16.0),
                         child: PageView(
+                          controller: _controller,
                           children: [
                             Image.asset('assets/kemerdekaan1.png',
                                 fit: BoxFit.cover),
@@ -267,31 +327,40 @@ class CashierView extends StatelessWidget {
                         ),
                       ),
                     ),
-                  if (themeController.isKemerdekaanTheme.value)
                     SmoothPageIndicator(
                       controller: _controller,
                       count: 4,
                       effect: WormEffect(
-                        dotWidth: 10.0,
-                        dotHeight: 10.0,
+                        dotWidth: screenWidth > 600 ? 12.0 : 10.0,
+                        dotHeight: screenWidth > 600 ? 12.0 : 10.0,
                         dotColor: Colors.grey,
                         activeDotColor: Colors.green,
                       ),
                     ),
-                  SizedBox(height: 16.0),
+                  ],
+                  SizedBox(height: screenWidth > 600 ? 24.0 : 16.0),
                   TextField(
                     decoration: InputDecoration(
                       hintText: 'Cari makanan...',
-                      prefixIcon: Icon(Icons.search),
+                      hintStyle: TextStyle(
+                        fontSize: screenWidth > 600 ? 18 : 16,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        size: screenWidth > 600 ? 28 : 24,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.0),
                       ),
+                    ),
+                    style: TextStyle(
+                      fontSize: screenWidth > 600 ? 18 : 16,
                     ),
                     onChanged: (value) {
                       searchQuery.value = value;
                     },
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: screenWidth > 600 ? 28 : 20),
                   Expanded(
                     child: Obx(() {
                       var filteredFoodItems = foodItems.where((foodItem) {
@@ -303,13 +372,21 @@ class CashierView extends StatelessWidget {
 
                       return filteredFoodItems.isEmpty
                           ? Center(
-                              child: Text('No food items match your search.'))
+                              child: Text(
+                                'No food items match your search.',
+                                style: TextStyle(
+                                  fontSize: screenWidth > 600 ? 18 : 16,
+                                ),
+                              ),
+                            )
                           : GridView.builder(
                               gridDelegate:
                                   SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 10.0,
-                                mainAxisSpacing: 10.0,
+                                crossAxisCount: crossAxisCount,
+                                crossAxisSpacing:
+                                    screenWidth > 600 ? 16.0 : 10.0,
+                                mainAxisSpacing:
+                                    screenWidth > 600 ? 16.0 : 10.0,
                                 childAspectRatio: 0.75,
                               ),
                               itemCount: filteredFoodItems.length,
