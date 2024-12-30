@@ -8,6 +8,7 @@ import 'package:cashier/app/modules/event/controllers/event_controller.dart';
 import 'package:cashier/app/modules/event/views/event_view.dart';
 import 'package:cashier/app/modules/history/views/history_view.dart';
 import 'package:cashier/app/modules/income/views/income_view.dart';
+import 'package:cashier/app/modules/location/views/location_view.dart';
 
 import 'package:cashier/app/modules/stock/views/Stock_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -159,6 +160,13 @@ class CashierView extends StatelessWidget {
                           Get.to(() => EventControlPage());
                         },
                         title: const Text('Theme'),
+                      ),
+                      ListTile(
+                        onTap: () {
+                          drawerController.closeDrawer();
+                          Get.to(() => LocationView());
+                        },
+                        title: const Text('Location'),
                       ),
                     ],
                   );
